@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-pod
+  template:
+    metadata:
+      labels:
+        app: mongo-pod
+    spec:
+      serviceAccountName: bsc-ssd-y4-2025-sa
+      containers:
+      - image: bitnami/mongodb:latest
+        name: mongo
+        env:
+        - name: MONGODB_ROOT_PASSWORD
+          value: "secret"
+        - name: MONGODB_ROOT_USER
+          value: "admin"
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /bitnami/mongodb 
+          name: mongo-volume
+      volumes:
+      - name: mongo-volume
+        persistentVolumeClaim:
+          claimName: mongo-pvc-sc
