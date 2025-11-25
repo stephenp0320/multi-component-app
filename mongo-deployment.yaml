@@ -14,19 +14,33 @@ spec:
     spec:
       serviceAccountName: bsc-ssd-y4-2025-sa
       containers:
-      - image: bitnami/mongodb:latest
-        name: mongo
-        env:
-        - name: MONGODB_ROOT_PASSWORD
-          value: "secret"
-        - name: MONGODB_ROOT_USER
-          value: "admin"
-        ports:
-        - containerPort: 27017
-        volumeMounts:
-        - mountPath: /bitnami/mongodb 
-          name: mongo-volume
+        - name: mongo
+          image: bitnami/mongodb:latest
+          env:
+            - name: MONGODB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: password
+            - name: MONGODB_ROOT_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: username
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-volume
+              mountPath: /bitnami/mongodb   
+            - name: mongo-config-test
+              mountPath: /bitnami           
       volumes:
-      - name: mongo-volume
-        persistentVolumeClaim:
-          claimName: mongo-pvc-sc
+        - name: mongo-volume
+          persistentVolumeClaim:
+            claimName: my-mongo-pvc
+        - name: mongo-config-test
+          configMap:
+            name: mongodb-config
+            items:
+              - key: sample.conf
+                path: test.conf
